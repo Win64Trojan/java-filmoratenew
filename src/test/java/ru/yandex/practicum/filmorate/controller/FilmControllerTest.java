@@ -1,5 +1,9 @@
 package ru.yandex.practicum.filmorate.controller;
 
+import jakarta.validation.ConstraintViolation;
+import jakarta.validation.Validation;
+import jakarta.validation.Validator;
+import jakarta.validation.ValidatorFactory;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import ru.yandex.practicum.filmorate.exceptions.ValidationException;
@@ -7,17 +11,97 @@ import ru.yandex.practicum.filmorate.model.Film;
 
 import java.time.LocalDate;
 import java.util.Collection;
+import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 class FilmControllerTest {
 
     private FilmController controller;
 
+    private Validator validator;
+
     @BeforeEach
     void setUp() {
         controller = new FilmController();
+        ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
+        validator = factory.getValidator();
+    }
+
+
+    @Test
+    void testNameCannotBeBlank() {
+        Film film = new Film();
+        film.setName("");
+        film.setDuration(200);
+        film.setDescription("X".repeat(190));
+        film.setReleaseDate(LocalDate.of(1975, 10, 10));
+
+        Set<ConstraintViolation<Film>> violations = validator.validate(film);
+
+        assertEquals(1, violations.size());
+
+        ConstraintViolation<Film> violation = violations.iterator().next();
+
+        assertEquals("название не может быть пустым или состоять только из пробелов", violation.getMessage());
+        assertEquals("name", violation.getPropertyPath().toString());
+    }
+
+    @Test
+    void testDurationCannotBeNegative() {
+        Film film = new Film();
+        film.setName("Титаник");
+        film.setDuration(-200);
+        film.setDescription("X".repeat(190));
+        film.setReleaseDate(LocalDate.of(1975, 10, 10));
+
+        Set<ConstraintViolation<Film>> violations = validator.validate(film);
+
+        assertEquals(1, violations.size());
+
+        ConstraintViolation<Film> violation = violations.iterator().next();
+
+        assertEquals("Длительность должна быть положительной (больше нуля)", violation.getMessage());
+        assertEquals("duration", violation.getPropertyPath().toString());
+
+    }
+
+    @Test
+    void testDescriptionSize201() {
+        Film film = new Film();
+        film.setName("Титаник");
+        film.setDuration(200);
+        film.setDescription("X".repeat(201));
+        film.setReleaseDate(LocalDate.of(1975, 10, 10));
+
+        Set<ConstraintViolation<Film>> violations = validator.validate(film);
+
+        assertEquals(1, violations.size());
+
+        ConstraintViolation<Film> violation = violations.iterator().next();
+
+        assertEquals("максимальная длина описания — 200 символов", violation.getMessage());
+        assertEquals("description", violation.getPropertyPath().toString());
+    }
+
+    @Test
+    void testReleaseDate1894() {
+        Film film = new Film();
+        film.setName("Титаник");
+        film.setDuration(200);
+        film.setDescription("X".repeat(190));
+        film.setReleaseDate(LocalDate.of(1375, 10, 10));
+
+        Set<ConstraintViolation<Film>> violations = validator.validate(film);
+
+        assertEquals(1, violations.size());
+
+        ConstraintViolation<Film> violation = violations.iterator().next();
+
+        assertEquals("Дата должна быть в диапазоне от 1895-12-28 до сегодняшнего дня", violation.getMessage());
+        assertEquals("releaseDate", violation.getPropertyPath().toString());
     }
 
     // Тест 1: Создание фильма — успех

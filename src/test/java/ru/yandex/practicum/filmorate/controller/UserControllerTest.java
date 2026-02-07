@@ -1,5 +1,9 @@
 package ru.yandex.practicum.filmorate.controller;
 
+import jakarta.validation.ConstraintViolation;
+import jakarta.validation.Validation;
+import jakarta.validation.Validator;
+import jakarta.validation.ValidatorFactory;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import ru.yandex.practicum.filmorate.exceptions.ValidationException;
@@ -7,17 +11,122 @@ import ru.yandex.practicum.filmorate.model.User;
 
 import java.time.LocalDate;
 import java.util.Collection;
+import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 class UserControllerTest {
 
     private UserController controller;
 
+    private Validator validator;
+
     @BeforeEach
     void setUp() {
         controller = new UserController();
+
+        ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
+        validator = factory.getValidator();
+    }
+
+
+    @Test
+    void testLoginCannotBeEmpty() {
+        User user = new User();
+        user.setName("Name1");
+        user.setBirthday(LocalDate.of(1980, 1, 1));
+        user.setEmail("yandex@mail.ru");
+        user.setLogin(null);
+
+        Set<ConstraintViolation<User>> violations = validator.validate(user);
+
+        assertEquals(1, violations.size());
+
+        ConstraintViolation<User> violation = violations.iterator().next();
+
+        assertEquals("Логин не может быть пустым", violation.getMessage());
+        assertEquals("login", violation.getPropertyPath().toString());
+
+    }
+
+    @Test
+    void testLoginCannotContainWhitespace() {
+
+        User user = new User();
+        user.setName("Name1");
+        user.setBirthday(LocalDate.of(1980, 1, 1));
+        user.setEmail("yandex@mail.ru");
+        user.setLogin("Login space");
+
+        Set<ConstraintViolation<User>> violations = validator.validate(user);
+
+        assertEquals(1, violations.size());
+
+        ConstraintViolation<User> violation = violations.iterator().next();
+
+        assertEquals("Логин не должен содержать пробелы", violation.getMessage());
+        assertEquals("login", violation.getPropertyPath().toString());
+    }
+
+
+    @Test
+    void testBirthdayCannotBeInFuture() {
+
+        User user = new User();
+        user.setName("Name1");
+        user.setBirthday(LocalDate.of(2027, 2, 8));
+        user.setEmail("yandex@mail.ru");
+        user.setLogin("Login");
+
+        Set<ConstraintViolation<User>> violations = validator.validate(user);
+
+        assertEquals(1, violations.size());
+
+        ConstraintViolation<User> violation = violations.iterator().next();
+
+        assertEquals("дата рождения не может быть в будущем.", violation.getMessage());
+        assertEquals("birthday", violation.getPropertyPath().toString());
+    }
+
+
+    @Test
+    void testEmailCannotBeEmpty() {
+
+        User user = new User();
+        user.setName("Name1");
+        user.setBirthday(LocalDate.of(1980, 1, 1));
+        user.setEmail(null);
+        user.setLogin("Login");
+
+        Set<ConstraintViolation<User>> violations = validator.validate(user);
+
+        assertEquals(1, violations.size());
+
+        ConstraintViolation<User> violation = violations.iterator().next();
+
+        assertEquals("Электронная почта не может быть пустой", violation.getMessage());
+        assertEquals("email", violation.getPropertyPath().toString());
+    }
+
+    @Test
+    void testEmailMustHaveValidFormat() {
+
+        User user = new User();
+        user.setName("Name1");
+        user.setBirthday(LocalDate.of(1980, 1, 1));
+        user.setEmail("yandex#mail.ru");
+        user.setLogin("Login");
+
+        Set<ConstraintViolation<User>> violations = validator.validate(user);
+
+        assertEquals(1, violations.size());
+
+        ConstraintViolation<User> violation = violations.iterator().next();
+
+        assertEquals("Некорректный формат электронной почты (должен содержать @ и домен)", violation.getMessage());
+        assertEquals("email", violation.getPropertyPath().toString());
     }
 
     // Тест 1: Создание пользователя — успех (имя задано)
