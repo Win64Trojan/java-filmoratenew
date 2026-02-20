@@ -20,5 +20,10 @@ public class Film {
     LocalDate releaseDate;
     @PositiveTime
     Integer duration;
+    Integer likes;
+
+    public Integer getLikes() {
+        return likes != null ? likes : 0;
+    }
 
 }

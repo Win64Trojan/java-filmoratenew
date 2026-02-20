@@ -3,10 +3,12 @@ package ru.yandex.practicum.filmorate.controller;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.MethodArgumentNotValidException;
-import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
-import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.bind.annotation.RestControllerAdvice;
+import ru.yandex.practicum.filmorate.exceptions.InvalidOperationException;
+import ru.yandex.practicum.filmorate.exceptions.NotFoundException;
+import ru.yandex.practicum.filmorate.exceptions.ValidationException;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -14,14 +16,13 @@ import java.util.HashMap;
 import java.util.Map;
 
 
-@ControllerAdvice
+@RestControllerAdvice
 @Slf4j
 public class ValidationExceptionHandler {
 
     private static final DateTimeFormatter formatter =
             DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
-    @ResponseBody
     @ExceptionHandler(MethodArgumentNotValidException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public Map<String, Object> handleMethodArgumentNotValid(MethodArgumentNotValidException ex) {
@@ -40,4 +41,24 @@ public class ValidationExceptionHandler {
 
         return Map.of("Ошибки", errors, "Время", LocalDateTime.now().format(formatter));
     }
+
+    @ExceptionHandler(NotFoundException.class)
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    public ErrorRespounse notFound(NotFoundException ex) {
+        return new ErrorRespounse(ex.getMessage());
+    }
+
+    @ExceptionHandler(InvalidOperationException.class)
+    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+    public ErrorRespounse invalidOperation(InvalidOperationException ex) {
+        return new ErrorRespounse(ex.getMessage());
+    }
+
+    @ExceptionHandler(ValidationException.class)
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    public ErrorRespounse notFound(ValidationException ex) {
+        return new ErrorRespounse(ex.getMessage());
+    }
+
+
 }
