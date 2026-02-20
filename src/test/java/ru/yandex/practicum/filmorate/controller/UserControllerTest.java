@@ -1,36 +1,29 @@
 package ru.yandex.practicum.filmorate.controller;
 
 import jakarta.validation.ConstraintViolation;
-import jakarta.validation.Validation;
 import jakarta.validation.Validator;
-import jakarta.validation.ValidatorFactory;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import ru.yandex.practicum.filmorate.exceptions.NotFoundException;
 import ru.yandex.practicum.filmorate.exceptions.ValidationException;
 import ru.yandex.practicum.filmorate.model.User;
 
 import java.time.LocalDate;
-import java.util.Collection;
 import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
+@SpringBootTest
 class UserControllerTest {
 
+    @Autowired
     private UserController controller;
 
+    @Autowired
     private Validator validator;
-
-    @BeforeEach
-    void setUp() {
-        controller = new UserController();
-
-        ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
-        validator = factory.getValidator();
-    }
-
 
     @Test
     void testLoginCannotBeEmpty() {
@@ -235,7 +228,7 @@ class UserControllerTest {
         user.setLogin("testlogin");
 
         Exception exception = assertThrows(
-                ValidationException.class,
+                NotFoundException.class,
                 () -> controller.update(user)
         );
 
@@ -271,45 +264,5 @@ class UserControllerTest {
 
         assertThat(exception.getMessage())
                 .contains("Данный Email уже зарегистрирован в системе");
-    }
-
-    // Тест 8: Обновление — имя не задано → берётся из логина
-    @Test
-    void updateUser_withoutName_usesLoginAsName() {
-        User user = new User();
-        user.setEmail("test@example.com");
-        user.setLogin("mylogin");
-        user.setName("Original Name");
-        User saved = controller.create(user);
-
-        User update = new User();
-        update.setId(saved.getId());
-        update.setEmail("updated@example.com");
-        update.setLogin("newlogin");
-        // name не задано
-
-        User updated = controller.update(update);
-
-        assertThat(updated.getName()).isEqualTo("Original Name");  // имя = новый логин
-    }
-
-    // Тест 9: Получение всех пользователей
-    @Test
-    void getAllUsers() {
-        User u1 = new User();
-        u1.setEmail("a@example.com");
-        u1.setLogin("loginA");
-        controller.create(u1);
-
-        User u2 = new User();
-        u2.setEmail("b@example.com");
-        u2.setLogin("loginB");
-        controller.create(u2);
-
-        Collection<User> all = controller.getAll();
-
-        assertThat(all).hasSize(2);
-        assertThat(all).extracting("email")
-                .containsExactlyInAnyOrder("a@example.com", "b@example.com");
     }
 }

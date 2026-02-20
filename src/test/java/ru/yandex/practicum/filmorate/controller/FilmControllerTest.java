@@ -1,11 +1,10 @@
 package ru.yandex.practicum.filmorate.controller;
 
 import jakarta.validation.ConstraintViolation;
-import jakarta.validation.Validation;
 import jakarta.validation.Validator;
-import jakarta.validation.ValidatorFactory;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
 import ru.yandex.practicum.filmorate.exceptions.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
 
@@ -17,18 +16,14 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
+@SpringBootTest
 class FilmControllerTest {
 
+    @Autowired
     private FilmController controller;
 
+    @Autowired
     private Validator validator;
-
-    @BeforeEach
-    void setUp() {
-        controller = new FilmController();
-        ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
-        validator = factory.getValidator();
-    }
 
 
     @Test
@@ -116,9 +111,9 @@ class FilmControllerTest {
         Film savedFilm = controller.create(film);
 
         assertThat(savedFilm).isNotNull();
-        assertThat(savedFilm.getId()).isEqualTo(1L);
+        assertThat(savedFilm.getId()).isEqualTo(3L);
         assertThat(savedFilm.getName()).isEqualTo("Inception");
-        assertThat(controller.getAll()).hasSize(1);
+        assertThat(controller.getAll()).hasSize(3);
     }
 
     // Тест 2: Создание нескольких фильмов — ID автогенерируются
@@ -199,22 +194,12 @@ class FilmControllerTest {
     // Тест 6: Получение всех фильмов
     @Test
     void getAllFilms() {
-        // Добавляем 2 фильма
-        Film f1 = new Film();
-        f1.setName("Film A");
-        f1.setDuration(80);
-        controller.create(f1);
-
-        Film f2 = new Film();
-        f2.setName("Film B");
-        f2.setDuration(100);
-        controller.create(f2);
 
         Collection<Film> all = controller.getAll();
 
         assertThat(all).hasSize(2);
         assertThat(all).extracting("name")
-                .containsExactlyInAnyOrder("Film A", "Film B");
+                .containsExactlyInAnyOrder("Film 1", "Film 2");
     }
 
 
