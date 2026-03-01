@@ -1,8 +1,7 @@
 # java-filmorate
 
 # *Схема базы данных*
-![Screenshot of the database schema for github](<img width="1109" height="738" alt="image" src="https://github.com/user-attachments/assets/2427a81a-5f0c-48fb-a8f1-731a6e1330a5" />
-) 
+![Screenshot of the database schema for github](./bd-scheme.png)
 
 
 ---
