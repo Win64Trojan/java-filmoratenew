@@ -119,8 +119,8 @@ public class BaseUserService implements UserService {
         User friend = userRepository.findById(friendId)
                 .orElseThrow(() -> new NotFoundException("Пользователь с ID [" + friendId + "] не найден"));
         return userRepository.findCommonFriends(user, friend)
-                .stream().
-                map(UserMapper::mapToUserDTO)
+                .stream()
+                .map(UserMapper::mapToUserDTO)
                 .collect(Collectors.toList());
     }
 }
