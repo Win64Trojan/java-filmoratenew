@@ -13,11 +13,13 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import ru.yandex.practicum.filmorate.dto.FilmDto;
+import ru.yandex.practicum.filmorate.dto.NewFilmRequest;
+import ru.yandex.practicum.filmorate.dto.UpdateFilmRequest;
 import ru.yandex.practicum.filmorate.exceptions.ValidationException;
-import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.service.film.FilmService;
 
-import java.util.Collection;
+import java.util.List;
 
 @RestController()
 @RequestMapping("/films")
@@ -28,35 +30,36 @@ public class FilmController {
     @Autowired
     private final FilmService filmService;
 
-    @PostMapping
-    public Film create(@Valid @RequestBody Film film) {
-        log.trace("Валидация @Valid прошла успешно, идёт присваивание ID");
-        return filmService.create(film);
-    }
-
-    @PutMapping
-    public Film update(@Valid @RequestBody Film film) {
-        log.trace("Валидация @Valid прошла успешно");
-        return filmService.update(film);
-    }
-
-    @PutMapping("/{id}/like/{userId}")
-    public Film updateLike(@PathVariable("id") Long filmId, @PathVariable Long userId) {
-        return filmService.addLike(filmId, userId);
-    }
-
-    @GetMapping("/{id}")
-    public Film getFilmById(@PathVariable Long id) {
-        return filmService.getFilmById(id);
-    }
 
     @GetMapping
-    public Collection<Film> getAll() {
+    public List<FilmDto> getAll() {
         return filmService.getAll();
     }
 
+    @PostMapping
+    public FilmDto create(@Valid @RequestBody NewFilmRequest request) {
+        log.trace("Валидация @Valid прошла успешно, идёт присваивание ID");
+        return filmService.create(request);
+    }
+
+    @PutMapping
+    public FilmDto update(@Valid @RequestBody UpdateFilmRequest request) {
+        log.trace("Валидация @Valid прошла успешно");
+        return filmService.update(request);
+    }
+
+    @PutMapping("/{id}/like/{userId}")
+    public void updateLike(@PathVariable("id") Long filmId, @PathVariable Long userId) {
+        filmService.addLike(filmId, userId);
+    }
+
+    @GetMapping("/{id}")
+    public FilmDto getFilmById(@PathVariable Long id) {
+        return filmService.getFilmById(id);
+    }
+
     @GetMapping("/popular")
-    public Collection<Film> getPopularFilms(@RequestParam(name = "count", defaultValue = "10") Integer size) {
+    public List<FilmDto> getPopularFilms(@RequestParam(name = "count", defaultValue = "10") Integer size) {
 
         if (size < 0) {
             throw new ValidationException("Занчение не может быть меньше нуля.");
@@ -66,9 +69,9 @@ public class FilmController {
     }
 
     @DeleteMapping("{id}/like/{userId}")
-    public Film removeLike(@PathVariable("id") Long filmId, @PathVariable Long userId) {
+    public void removeLike(@PathVariable("id") Long filmId, @PathVariable Long userId) {
 
-        return filmService.removeLike(filmId, userId);
+        filmService.removeLike(filmId, userId);
     }
 
 }

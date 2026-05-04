@@ -1,24 +1,26 @@
 package ru.yandex.practicum.filmorate.service.film;
 
 import org.springframework.stereotype.Service;
-import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.dto.FilmDto;
+import ru.yandex.practicum.filmorate.dto.NewFilmRequest;
+import ru.yandex.practicum.filmorate.dto.UpdateFilmRequest;
 
-import java.util.Collection;
+import java.util.List;
 
 @Service
 public interface FilmService {
 
-    Film create(Film film);
+    List<FilmDto> getAll();
 
-    Film update(Film film);
+    FilmDto create(NewFilmRequest request);
 
-    Film getFilmById(Long id);
+    FilmDto update(UpdateFilmRequest request);
 
-    Collection<Film> getAll();
+    FilmDto getFilmById(Long id);
 
-    Film addLike(Long filmId, Long userId);
+    void addLike(Long filmId, Long userId);
 
-    Film removeLike(Long filmId, Long userId);
+    void removeLike(Long filmId, Long userId);
 
-    Collection<Film> findPopularFilms(int size);
+    List<FilmDto> findPopularFilms(int size);
 }

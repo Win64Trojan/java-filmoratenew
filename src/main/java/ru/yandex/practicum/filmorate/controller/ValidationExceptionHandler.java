@@ -44,8 +44,13 @@ public class ValidationExceptionHandler {
 
     @ExceptionHandler(NotFoundException.class)
     @ResponseStatus(HttpStatus.NOT_FOUND)
-    public ErrorRespounse notFound(NotFoundException ex) {
-        return new ErrorRespounse(ex.getMessage());
+    public Map<String, Object> notFound(NotFoundException ex) {
+        log.error("Ошибка валидации: {}", ex.getMessage());
+
+        Map<String, String> errors = new HashMap<>();
+        errors.put("validation_error", ex.getMessage());
+
+        return Map.of("Ошибки", errors, "Время", LocalDateTime.now().format(formatter));
     }
 
     @ExceptionHandler(InvalidOperationException.class)
@@ -54,11 +59,16 @@ public class ValidationExceptionHandler {
         return new ErrorRespounse(ex.getMessage());
     }
 
-    @ExceptionHandler(ValidationException.class)
-    @ResponseStatus(HttpStatus.NOT_FOUND)
-    public ErrorRespounse notFound(ValidationException ex) {
-        return new ErrorRespounse(ex.getMessage());
-    }
 
+    @ExceptionHandler(ValidationException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public Map<String, Object> handleValidationException(ValidationException ex) {
+        log.error("Ошибка валидации: {}", ex.getMessage());
+
+        Map<String, String> errors = new HashMap<>();
+        errors.put("validation_error", ex.getMessage());
+
+        return Map.of("Ошибки", errors, "Время", LocalDateTime.now().format(formatter));
+    }
 
 }
