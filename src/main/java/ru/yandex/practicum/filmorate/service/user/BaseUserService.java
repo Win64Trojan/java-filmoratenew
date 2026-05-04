@@ -3,13 +3,19 @@ package ru.yandex.practicum.filmorate.service.user;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import ru.yandex.practicum.filmorate.dal.user.UserRepository;
+import ru.yandex.practicum.filmorate.dto.NewUserRequest;
+import ru.yandex.practicum.filmorate.dto.UpdateUserRequest;
+import ru.yandex.practicum.filmorate.dto.UserDto;
 import ru.yandex.practicum.filmorate.exceptions.InvalidOperationException;
 import ru.yandex.practicum.filmorate.exceptions.NotFoundException;
 import ru.yandex.practicum.filmorate.exceptions.ValidationException;
+import ru.yandex.practicum.filmorate.mapper.user.UserMapper;
 import ru.yandex.practicum.filmorate.model.User;
-import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
-import java.util.Collection;
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 
 @Service
@@ -17,41 +23,63 @@ import java.util.Collection;
 public class BaseUserService implements UserService {
 
     @Autowired
-    private final UserStorage userStorage;
+    private final UserRepository userRepository;
 
     @Override
-    public User create(User user) {
-        return userStorage.create(user);
+    public List<UserDto> getAll() {
+        return userRepository.getAll()
+                .stream()
+                .map(UserMapper::mapToUserDTO)
+                .collect(Collectors.toList());
     }
 
     @Override
-    public User update(User user) {
-        return userStorage.update(user);
+    public UserDto create(NewUserRequest request) {
+
+        Optional<User> alredyExistsUser = userRepository.findByEmail(request.getEmail());
+        if (alredyExistsUser.isPresent()) {
+            throw new ValidationException("Данный имейл уже используется");
+        }
+
+        if (request.getName() == null || request.getName().isBlank()) {
+            request.setName(request.getLogin());
+        }
+
+        User user = UserMapper.mapToUser(request);
+
+        user = userRepository.create(user);
+
+        return UserMapper.mapToUserDTO(user);
     }
 
     @Override
-    public User getUserById(Long id) {
-        return userStorage.getUserById(id)
+    public UserDto update(UpdateUserRequest request) {
+
+        User updateUser = userRepository.findById(request.getId())
+                .map(user -> UserMapper.updateUserFields(user, request))
+                .orElseThrow(() -> new NotFoundException("Пользователь не найден"));
+
+        updateUser = userRepository.update(updateUser);
+
+        return UserMapper.mapToUserDTO(updateUser);
+    }
+
+    @Override
+    public UserDto getUserById(Long id) {
+        User user = userRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("Пользователь с ID [" + id + "] не найден"));
-    }
 
-    @Override
-    public Collection<User> getAll() {
-        return userStorage.getAll();
+        return UserMapper.mapToUserDTO(user);
     }
 
     @Override
     public void addFriend(Long userId, Long friendId) {
 
-        if (userId.equals(friendId)) {
-            throw new ValidationException("Пользователь не может добавить в друзья самого себя");
-        }
-
-        User user = userStorage.getUserById(userId)
+        User user = userRepository.findById(userId)
                 .orElseThrow(() -> new NotFoundException("Пользователь с ID [" + userId + "] не найден"));
-        User friend = userStorage.getUserById(friendId)
+        User friend = userRepository.findById(friendId)
                 .orElseThrow(() -> new NotFoundException("Пользователь с ID [" + friendId + "] не найден"));
-        userStorage.addFriend(user, friend);
+        userRepository.addFriend(user.getId(), friend.getId());
 
     }
 
@@ -62,31 +90,37 @@ public class BaseUserService implements UserService {
             throw new InvalidOperationException("Пользователь не может удалить самого себя из друзей");
         }
 
-        User user = userStorage.getUserById(userId)
+        User user = userRepository.findById(userId)
                 .orElseThrow(() -> new NotFoundException("Пользователь с ID [" + userId + "] не найден"));
-        User friend = userStorage.getUserById(friendId)
+        User friend = userRepository.findById(friendId)
                 .orElseThrow(() -> new NotFoundException("Пользователь с ID [" + friendId + "] не найден"));
-        userStorage.removeFriends(user, friend);
+        userRepository.removeFriends(user, friend);
     }
 
     @Override
-    public Collection<User> findAllFriends(Long userId) {
-        User user = userStorage.getUserById(userId)
+    public List<UserDto> findAllFriends(Long userId) {
+        User user = userRepository.findById(userId)
                 .orElseThrow(() -> new NotFoundException("Пользователь с ID [" + userId + "] не найден"));
-        return userStorage.findAllFriends(user);
+
+        return userRepository.findAllFriends(user)
+                .stream().map(UserMapper::mapToUserDTO)
+                .collect(Collectors.toList());
     }
 
     @Override
-    public Collection<User> findCommonFriends(Long userId, Long friendId) {
+    public List<UserDto> findCommonFriends(Long userId, Long friendId) {
 
         if (userId.equals(friendId)) {
             throw new InvalidOperationException("Пользователь не может иметь общих друзей сам с собой");
         }
 
-        User user = userStorage.getUserById(userId)
+        User user = userRepository.findById(userId)
                 .orElseThrow(() -> new NotFoundException("Пользователь с ID [" + userId + "] не найден"));
-        User friend = userStorage.getUserById(friendId)
+        User friend = userRepository.findById(friendId)
                 .orElseThrow(() -> new NotFoundException("Пользователь с ID [" + friendId + "] не найден"));
-        return userStorage.findCommonFriends(user, friend);
+        return userRepository.findCommonFriends(user, friend)
+                .stream().
+                map(UserMapper::mapToUserDTO)
+                .collect(Collectors.toList());
     }
 }

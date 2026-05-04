@@ -1,18 +1,19 @@
-package ru.yandex.practicum.filmorate.model;
+package ru.yandex.practicum.filmorate.dto;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
 import ru.yandex.practicum.filmorate.annotation.DateRange;
 import ru.yandex.practicum.filmorate.annotation.PositiveTime;
+import ru.yandex.practicum.filmorate.model.Genre;
+import ru.yandex.practicum.filmorate.model.Rating;
 
 import java.time.LocalDate;
 import java.util.LinkedHashSet;
 
 @Data
-public class Film {
+public class NewFilmRequest {
 
-    Long id;
     @NotBlank(message = "название не может быть пустым или состоять только из пробелов")
     String name;
     @Size(max = 200, message = "максимальная длина описания — 200 символов")
@@ -21,13 +22,8 @@ public class Film {
     LocalDate releaseDate;
     @PositiveTime
     Integer duration;
-    Integer likes;
-    LinkedHashSet<Genre> genres = new LinkedHashSet<>();
     Rating mpa;
-
-    public Integer getLikes() {
-        return likes != null ? likes : 0;
-    }
+    LinkedHashSet<Genre> genres = new LinkedHashSet<>();
 
 
 }
