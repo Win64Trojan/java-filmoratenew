@@ -71,9 +71,6 @@ public class JdbcImplUserRepository extends BaseRepository<User> implements User
 
     @Override
     public void addFriend(Long userId, Long friendId) {
-        if (userId.equals(friendId)) {
-            throw new ValidationException("Пользователь не может добавить себя в друзья");
-        }
 
         if (areFriends(userId, friendId)) {
             throw new ValidationException("Пользователи уже являются друзьями");

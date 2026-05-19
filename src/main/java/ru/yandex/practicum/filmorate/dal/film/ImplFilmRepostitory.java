@@ -60,6 +60,8 @@ public class ImplFilmRepostitory extends BaseRepository<Film> implements FilmRep
 
     private static final String UPDATE_QUERY = "UPDATE films SET film_name = ?, rating_id = ?, description = ?, release_date = ?, duration = ? WHERE film_id = ?";
 
+    private static final String INSERT_FILM_GENRE_QUERY = "INSERT INTO FILMS_GENRES (film_id, genre_id) VALUES (?, ?)";
+
     @Autowired
     private FilmResultSetExtractor filmResultSetExtractor;
 
@@ -85,11 +87,9 @@ public class ImplFilmRepostitory extends BaseRepository<Film> implements FilmRep
 
         film.setId(id);
 
-
         for (Genre genre : film.getGenres()) {
-            update("INSERT INTO FILMS_GENRES (film_id, genre_id) VALUES (?, ?)", film.getId(), genre.getId());
+            update(INSERT_FILM_GENRE_QUERY, film.getId(), genre.getId());
         }
-
 
         return film;
     }
