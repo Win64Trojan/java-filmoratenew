@@ -62,6 +62,7 @@ public class FilmController {
     public List<FilmDto> getPopularFilms(@RequestParam(name = "count", defaultValue = "10") Integer size) {
 
         if (size < 0) {
+            log.error("Попытка поиска популярных фильмов с отрицательным размером: {}", size);
             throw new ValidationException("Занчение не может быть меньше нуля.");
         }
 
