@@ -5,8 +5,10 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.jdbc.JdbcTest;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Import;
+import org.springframework.test.context.ActiveProfiles;
 import ru.yandex.practicum.filmorate.dal.user.JdbcImplUserRepository;
 import ru.yandex.practicum.filmorate.dto.FilmDto;
 import ru.yandex.practicum.filmorate.dto.NewFilmRequest;
@@ -28,6 +30,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 @Import({ImplFilmRepostitory.class, JdbcImplUserRepository.class, BaseFilmService.class, BaseUserService.class})
 @RequiredArgsConstructor(onConstructor_ = @Autowired)
 @ComponentScan("ru.yandex.practicum.filmorate")
+@ActiveProfiles("test")
 public class ImplFilmRepostitoryTest {
 
     @Autowired
