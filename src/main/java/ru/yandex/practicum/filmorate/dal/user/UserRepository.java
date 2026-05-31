@@ -24,4 +24,6 @@ public interface UserRepository {
     void removeFriends(User user, User friend);
 
     List<User> findCommonFriends(User user1, User user2);
+
+    void deleteUser(Long userId);
 }

@@ -162,6 +162,19 @@ public class BaseFilmService implements FilmService {
                 .collect(Collectors.toList());
     }
 
+    @Override
+    public void deleteFilm(Long filmId) {
+        log.trace("Удаление фильма с ID: {}", filmId);
+
+        if (filmId == null) {
+            log.error("Попытка удаления фильма с null ID");
+            throw new NotFoundException("ID фильма не может быть null");
+        }
+
+        filmRepostitory.deleteFilm(filmId);
+        log.info("Фильм успешно удален: {}", filmId);
+    }
+
 
     private Rating validateRating(Long ratingId) {
         log.trace("Валидация рейтинга: {}", ratingId);

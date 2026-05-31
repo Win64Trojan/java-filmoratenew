@@ -23,4 +23,6 @@ public interface FilmService {
     void removeLike(Long filmId, Long userId);
 
     List<FilmDto> findPopularFilms(int size);
+
+    void deleteFilm(Long filmId);
 }

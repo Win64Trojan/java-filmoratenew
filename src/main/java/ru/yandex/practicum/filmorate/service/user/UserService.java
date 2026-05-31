@@ -25,4 +25,6 @@ public interface UserService {
     List<UserDto> findAllFriends(Long userid);
 
     List<UserDto> findCommonFriends(Long userId, Long friendId);
+
+    void deleteUser(Long userId);
 }
