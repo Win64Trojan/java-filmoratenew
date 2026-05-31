@@ -22,7 +22,8 @@ public class JdbcImplUserRepository extends BaseRepository<User> implements User
     private static final String FIND_ALL_FRIENDS_QUERY = "SELECT u.* FROM users u JOIN friends f ON u.user_id = f.friend_id WHERE f.user_id = ?";
     private static final String REMOVE_FRIENDS_QUERY = "DELETE FROM FRIENDS WHERE USER_ID = ? AND FRIEND_ID = ?";
     private static final String FIND_COMMON_FRIENDS_QUERY = "SELECT * FROM (SELECT u.* FROM users u JOIN friends f ON u.user_id = f.friend_id WHERE f.user_id = ?) where user_id = (SELECT u.user_id FROM users u JOIN friends f ON u.user_id = f.friend_id WHERE f.user_id = ?)";
-
+    private static final String DELETE_USER_QUERY = "DELETE FROM users WHERE user_id = ?";
+    private static final String DELETE_FRIENDS_QUERY = "DELETE FROM friends WHERE user_id = ? OR friend_id = ?";
 
     public JdbcImplUserRepository(JdbcTemplate jdbc, RowMapper<User> mapper) {
         super(jdbc, mapper);
@@ -92,18 +93,28 @@ public class JdbcImplUserRepository extends BaseRepository<User> implements User
         return findMany(FIND_ALL_FRIENDS_QUERY, user.getId());
     }
 
-    private boolean areFriends(Long userId, Long friendId) {
-        Integer count = jdbcTemplate.queryForObject(
-                "SELECT COUNT(*) FROM friends WHERE user_id = ? AND friend_id = ?",
-                Integer.class, userId, friendId);
-        return count != null && count > 0;
-    }
-
-
     @Override
     public List<User> findCommonFriends(User user1, User user2) {
 
 
         return findMany(FIND_COMMON_FRIENDS_QUERY, user1.getId(), user2.getId());
+    }
+
+    @Override
+    public void deleteUser(Long userId) {
+
+        delete(DELETE_USER_QUERY, userId);
+        deleteFriends(userId);
+    }
+
+    private void deleteFriends(Long userId) {
+        delete(DELETE_FRIENDS_QUERY, userId, userId);
+    }
+
+    private boolean areFriends(Long userId, Long friendId) {
+        Integer count = jdbcTemplate.queryForObject(
+                "SELECT COUNT(*) FROM friends WHERE user_id = ? AND friend_id = ?",
+                Integer.class, userId, friendId);
+        return count != null && count > 0;
     }
 }
