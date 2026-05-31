@@ -153,8 +153,6 @@ public class ImplFilmRepostitory extends BaseRepository<Film> implements FilmRep
         delete(DELETE_FILM_GENRES_QUERY, filmId);
         delete(DELETE_FILM_QUERY, filmId);
     }
-
-
 }
 
 
