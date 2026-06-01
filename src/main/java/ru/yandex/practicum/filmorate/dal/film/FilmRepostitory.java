@@ -20,4 +20,6 @@ public interface FilmRepostitory {
     Film update(Film film);
 
     List<Film> findPopularFilms(int size);
+
+    void deleteFilm(Long filmId);
 }

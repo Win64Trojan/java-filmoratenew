@@ -61,6 +61,9 @@ public class ImplFilmRepostitory extends BaseRepository<Film> implements FilmRep
     private static final String UPDATE_QUERY = "UPDATE films SET film_name = ?, rating_id = ?, description = ?, release_date = ?, duration = ? WHERE film_id = ?";
 
     private static final String INSERT_FILM_GENRE_QUERY = "INSERT INTO FILMS_GENRES (film_id, genre_id) VALUES (?, ?)";
+    private static final String DELETE_LIKES_QUERY = "DELETE FROM LIKES WHERE film_id = ?";
+    private static final String DELETE_FILM_GENRES_QUERY = "DELETE FROM FILMS_GENRES WHERE film_id = ?";
+    private static final String DELETE_FILM_QUERY = "DELETE FROM films WHERE film_id = ?";
 
     @Autowired
     private FilmResultSetExtractor filmResultSetExtractor;
@@ -137,13 +140,19 @@ public class ImplFilmRepostitory extends BaseRepository<Film> implements FilmRep
         return film;
     }
 
+    @Override
     public List<Film> findPopularFilms(int size) {
 
         return jdbcTemplate.query(FIND_POPULAR_FILM_DESC_QUERY, filmResultSetExtractor, size);
 
     }
 
-
+    @Override
+    public void deleteFilm(Long filmId) {
+        delete(DELETE_LIKES_QUERY, filmId);
+        delete(DELETE_FILM_GENRES_QUERY, filmId);
+        delete(DELETE_FILM_QUERY, filmId);
+    }
 }
 
 

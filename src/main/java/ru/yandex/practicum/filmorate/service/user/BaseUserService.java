@@ -122,6 +122,18 @@ public class BaseUserService implements UserService {
                 .collect(Collectors.toList());
     }
 
+    @Override
+    public void deleteUser(Long userId) {
+
+        if (userId == null) {
+            log.error("Попытка удаления пользователя с null ID");
+            throw new NotFoundException("ID пользователя не может быть null");
+        }
+
+        log.info("Удаление пользователя с ID: {}", userId);
+        userRepository.deleteUser(userId);
+    }
+
     private User findUserById(Long userId) {
         log.debug("Поиск пользователя по ID: {}", userId);
         return userRepository.findById(userId)
